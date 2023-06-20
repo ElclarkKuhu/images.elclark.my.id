@@ -13,9 +13,9 @@
 		</a>
 
 		<div class="buttons">
-			<button type="button" class="icon-button"
-				><span class="material-symbols-rounded">assignment</span></button
-			>
+			<button type="button" class="icon-button">
+				<span class="material-symbols-rounded">assignment</span>
+			</button>
 			<button type="button" class="share">Share</button>
 		</div>
 

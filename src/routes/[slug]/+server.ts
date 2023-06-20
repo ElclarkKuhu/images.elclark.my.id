@@ -1,5 +1,3 @@
-import sharp from 'sharp';
-
 import { error } from '@sveltejs/kit';
 import { connect } from '@planetscale/database';
 import {
@@ -46,13 +44,14 @@ export const POST: RequestHandler = async ({ fetch, request, params, platform })
 		throw error(400, 'Bad request');
 	}
 
+	if (image.type !== 'image/webp') {
+		throw error(415, 'Unsupported media type');
+	}
+
 	const buffer = await image.arrayBuffer();
 	const description = form.get('description');
 
-	const { data, info } = await sharp(buffer).webp().toBuffer({ resolveWithObject: true });
-	console.log(info);
-
-	await platform.STATIC.put(`${STATIC_PATH}/${slug}.webp`, data);
+	await platform.STATIC.put(`${STATIC_PATH}/${slug}.webp`, buffer);
 
 	// CREATE TABLE images (
 	// 	id INT PRIMARY KEY AUTO_INCREMENT,
