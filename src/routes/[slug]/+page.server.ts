@@ -38,7 +38,7 @@ export const load = (async ({ fetch, params }) => {
 		};
 
 		return {
-			image: `${STATIC_URL}/${STATIC_PATH}/${image.id}.${image.ext}`
+			image: `${STATIC_URL}/${STATIC_PATH}/${image.slug}.${image.ext}`
 		};
 	}
 
