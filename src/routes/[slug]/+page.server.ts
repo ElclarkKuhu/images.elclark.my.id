@@ -33,12 +33,11 @@ export const load = (async ({ fetch, params }) => {
 			slug: string;
 			size: number;
 			time: number;
-			type: string;
-			ext: string;
+			description: string;
 		};
 
 		return {
-			image: `${STATIC_URL}/${STATIC_PATH}/${image.slug}.${image.ext}`
+			image: `${STATIC_URL}/${STATIC_PATH}/${image.slug}.webp`
 		};
 	}
 
