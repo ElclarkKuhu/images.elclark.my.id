@@ -15,6 +15,16 @@ export const POST: RequestHandler = async ({ fetch, request, params, platform })
 		throw error(500, 'Internal server error');
 	}
 
+	const { slug } = params;
+
+	if (!slug) {
+		throw error(404, 'Not found');
+	}
+
+	if (slug.length > 16) {
+		throw error(400, 'Slug is too long!');
+	}
+
 	const connection = connect({
 		host: DATABASE_HOST,
 		username: DATABASE_USERNAME,
@@ -24,12 +34,6 @@ export const POST: RequestHandler = async ({ fetch, request, params, platform })
 			return fetch(url, init);
 		}
 	});
-
-	const { slug } = params;
-
-	if (!slug) {
-		throw error(404, 'Not found');
-	}
 
 	const { rows } = await connection.execute('SELECT * FROM images WHERE slug = ?', [slug]);
 
@@ -48,18 +52,20 @@ export const POST: RequestHandler = async ({ fetch, request, params, platform })
 		throw error(415, 'Unsupported media type');
 	}
 
+	if (image.size > 1024 * 1024 * 5) {
+		throw error(413, 'Payload too large');
+	}
+
 	const buffer = await image.arrayBuffer();
 	const description = form.get('description');
 
-	await platform.env.STATIC.put(`${STATIC_PATH}/${slug}.webp`, buffer);
+	if (description) {
+		if (description.toString().length > 300) {
+			throw error(400, 'Description is too long!');
+		}
+	}
 
-	// CREATE TABLE images (
-	// 	id INT PRIMARY KEY AUTO_INCREMENT,
-	// 	slug VARCHAR(16) NOT NULL UNIQUE,
-	// 	description VARCHAR(300),
-	// 	time BIGINT,
-	// 	size INT
-	// );
+	await platform.env.STATIC.put(`${STATIC_PATH}/${slug}.webp`, buffer);
 
 	await connection.execute(
 		'INSERT INTO images (slug, description, size, time) VALUES (?, ?, ?, ?)',
@@ -75,10 +81,7 @@ export const POST: RequestHandler = async ({ fetch, request, params, platform })
 			status: 201,
 			headers: {
 				'Content-Type': 'application/json',
-				'Cache-Control': 'no-store',
-				'Access-Control-Allow-Origin': '*',
-				'Access-Control-Allow-Methods': 'GET POST OPTIONS',
-				'Access-Control-Allow-Headers': 'Content-Type Accept X-API-Key'
+				'Cache-Control': 'no-store'
 			}
 		}
 	);

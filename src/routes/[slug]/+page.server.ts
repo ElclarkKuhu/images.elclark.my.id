@@ -10,8 +10,12 @@ import {
 
 import type { PageServerLoad } from './$types';
 
-export const load = (async ({ fetch, params }) => {
+export const load = (async ({ fetch, params, setHeaders }) => {
 	if (!params.slug) {
+		throw error(404, 'Not found');
+	}
+
+	if (params.slug.length > 16) {
 		throw error(404, 'Not found');
 	}
 
@@ -36,8 +40,13 @@ export const load = (async ({ fetch, params }) => {
 			description: string;
 		};
 
+		setHeaders({
+			'Cache-Control': 'public, max-age=2592000, immutable'
+		});
+
 		return {
-			image: `${STATIC_URL}/${STATIC_PATH}/${image.slug}.webp`
+			image: `${STATIC_URL}/${STATIC_PATH}/${image.slug}.webp`,
+			description: image.description
 		};
 	}
 

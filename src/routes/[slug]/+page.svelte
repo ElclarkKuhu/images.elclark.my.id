@@ -1,10 +1,44 @@
 <script lang="ts">
+	import { onMount } from 'svelte';
+	import Tooltip from '$lib/tooltip.svelte';
+
 	import type { PageData } from './$types';
 	export let data: PageData;
+
+	let mounted = false;
+
+	onMount(() => {
+		mounted = true;
+	});
+
+	function fullscreen() {
+		const image = document.querySelector('img');
+
+		if (image) {
+			if (!document.fullscreenElement) {
+				image.requestFullscreen();
+			} else {
+				document.exitFullscreen();
+			}
+		}
+	}
+
+	function clipboard() {
+		const href = window.location.href;
+
+		if (href) {
+			navigator.clipboard.writeText(href);
+			// TODO: add a toast to show that the link has been copied
+		}
+	}
 </script>
 
 <div class="container">
-	<img src={data.image} alt="User Uploaded" />
+	<Tooltip text="Fullscreen" placement="top">
+		<button class="image-button" on:click={fullscreen}>
+			<img src={data.image} alt="User Uploaded" />
+		</button>
+	</Tooltip>
 	<header>
 		<a href="/" class="on-background-text">
 			<h1>
@@ -13,14 +47,23 @@
 		</a>
 
 		<div class="buttons">
-			<button type="button" class="icon-button">
-				<span class="material-symbols-rounded">assignment</span>
-			</button>
+			<div class="icon-buttons">
+				<Tooltip text="Static Link" placement="top">
+					<a href={data.image} class="icon-button" target="_blank">
+						<span class="material-symbols-rounded">link_off</span>
+					</a>
+				</Tooltip>
+				<Tooltip text="Copy Link" placement="top">
+					<button type="button" class="icon-button" on:click={clipboard} disabled={!mounted}>
+						<span class="material-symbols-rounded">assignment</span>
+					</button>
+				</Tooltip>
+			</div>
 			<button type="button" class="share">Share</button>
 		</div>
 
 		<button type="button" class="more icon-button">
-			<span class="material-symbols-rounded">more_vert</span>
+			<span class="material-symbols-rounded">read_more</span>
 		</button>
 	</header>
 </div>
@@ -50,14 +93,14 @@
 
 		width: 100%;
 		height: 4.5rem;
-		padding: 0 1.5rem;
+		padding: 0 1rem;
 
 		border-radius: var(--border-radius);
 		background-color: var(--color-surface-2);
 	}
 
 	h1 {
-		margin: 0;
+		margin: 0 0.5rem;
 
 		font-weight: 300;
 		font-size: var(--typescale-headline-small-font-size);
@@ -68,32 +111,45 @@
 		width: 100%;
 		height: 100%;
 
-		min-height: 42rem;
-
-		cursor: pointer;
 		object-fit: contain;
 		object-position: center;
+	}
 
+	.image-button {
+		display: flex;
+		align-items: center;
+		justify-content: center;
+
+		cursor: pointer;
+
+		padding: 0;
+		margin: 0;
+
+		border: none;
 		border-radius: var(--border-radius);
 
 		background-color: var(--color-surface-2);
+		overflow: hidden;
+
 		transition: border-radius 200ms ease 200ms, box-shadow 200ms ease;
 	}
 
-	img:hover {
+	.image-button:hover {
 		border-radius: 0.5rem;
 		box-shadow: 0 0 0 3px var(--color-primary);
 	}
 
 	.more {
 		display: flex;
-		align-items: center;
-		justify-content: center;
 	}
 
 	.buttons {
+		display: none;
+		gap: 0.5rem;
+	}
+
+	.icon-buttons {
 		display: flex;
-		gap: 0.75rem;
 	}
 
 	.icon-button {
@@ -164,6 +220,14 @@
 	}
 
 	@media (min-width: 470px) {
+		.more {
+			display: none;
+		}
+
+		.buttons {
+			display: flex;
+		}
+
 		h1 {
 			font-size: var(--typescale-headline-medium-font-size);
 			line-height: var(--typescale-headline-medium-line-height);
