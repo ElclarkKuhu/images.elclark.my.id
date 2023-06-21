@@ -51,7 +51,7 @@ export const POST: RequestHandler = async ({ fetch, request, params, platform })
 	const buffer = await image.arrayBuffer();
 	const description = form.get('description');
 
-	await platform.STATIC.put(`${STATIC_PATH}/${slug}.webp`, buffer);
+	await platform.env.STATIC.put(`${STATIC_PATH}/${slug}.webp`, buffer);
 
 	// CREATE TABLE images (
 	// 	id INT PRIMARY KEY AUTO_INCREMENT,

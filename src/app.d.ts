@@ -6,7 +6,13 @@ declare global {
 		// interface Locals {}
 		// interface PageData {}
 		interface Platform {
-			STATIC: R2Bucket;
+			env: {
+				STATIC: R2Bucket;
+			};
+			context: {
+				waitUntil(promise: Promise<any>): void;
+			};
+			caches: Cache;
 		}
 	}
 }
