@@ -74,7 +74,11 @@ export const POST: RequestHandler = async ({ fetch, request, params, platform })
 		{
 			status: 201,
 			headers: {
-				'content-type': 'application/json'
+				'Content-Type': 'application/json',
+				'Cache-Control': 'no-store',
+				'Access-Control-Allow-Origin': '*',
+				'Access-Control-Allow-Methods': 'GET POST OPTIONS',
+				'Access-Control-Allow-Headers': 'Content-Type Accept X-API-Key'
 			}
 		}
 	);
