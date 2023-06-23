@@ -10,9 +10,15 @@ import {
 
 import type { RequestHandler } from './$types';
 
+const authenticated = false;
+
 export const POST: RequestHandler = async ({ fetch, request, params, platform }) => {
 	if (!platform) {
 		throw error(500, 'Internal server error');
+	}
+
+	if (!authenticated) {
+		throw error(401, 'Unauthorized');
 	}
 
 	const { slug } = params;
@@ -29,8 +35,11 @@ export const POST: RequestHandler = async ({ fetch, request, params, platform })
 		host: DATABASE_HOST,
 		username: DATABASE_USERNAME,
 		password: DATABASE_PASSWORD,
-		fetch: (url: any, init: any) => {
-			delete init['cache'];
+		fetch: (url: RequestInfo | URL, init: RequestInit | undefined) => {
+			if (init) {
+				delete init['cache'];
+			}
+
 			return fetch(url, init);
 		}
 	});

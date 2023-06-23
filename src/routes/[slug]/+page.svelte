@@ -1,15 +1,11 @@
 <script lang="ts">
-	import { onMount } from 'svelte';
-	import Tooltip from '$lib/tooltip.svelte';
+	import Header from './header.svelte';
+	import { page } from '$app/stores';
 
 	import type { PageData } from './$types';
+
 	export let data: PageData;
-
-	let mounted = false;
-
-	onMount(() => {
-		mounted = true;
-	});
+	let { image, description, size, time } = data;
 
 	function fullscreen() {
 		const image = document.querySelector('img');
@@ -23,214 +19,152 @@
 		}
 	}
 
-	function clipboard() {
-		const href = window.location.href;
+	function formatBytes(bytes: number, decimals = 2) {
+		if (bytes === 0) return '0 Bytes';
 
-		if (href) {
-			navigator.clipboard.writeText(href);
-			// TODO: add a toast to show that the link has been copied
-		}
+		const k = 1024;
+		const dm = decimals < 0 ? 0 : decimals;
+		const sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB', 'PB', 'EB', 'ZB', 'YB'];
+
+		const i = Math.floor(Math.log(bytes) / Math.log(k));
+
+		return parseFloat((bytes / Math.pow(k, i)).toFixed(dm)) + ' ' + sizes[i];
+	}
+
+	function formatDate(date: number) {
+		const d = new Date(date);
+
+		return d.toLocaleDateString('en-US', {
+			year: 'numeric',
+			month: 'long',
+			day: 'numeric'
+		});
 	}
 </script>
 
+<svelte:head>
+	<title>
+		Elclark Images - {$page.params.slug}
+	</title>
+</svelte:head>
+
 <div class="container">
-	<Tooltip text="Fullscreen" placement="top">
-		<button class="image-button" on:click={fullscreen}>
-			<img src={data.image} alt="User Uploaded" />
-		</button>
-	</Tooltip>
-	<header>
-		<a href="/" class="on-background-text">
-			<h1>
-				<span class="font-medium primary-text">Elclark</span> images
-			</h1>
-		</a>
+	<Header {image} />
 
-		<div class="buttons">
-			<div class="icon-buttons">
-				<Tooltip text="Static Link" placement="top">
-					<a href={data.image} class="icon-button" target="_blank">
-						<span class="material-symbols-rounded">link_off</span>
-					</a>
-				</Tooltip>
-				<Tooltip text="Copy Link" placement="top">
-					<button type="button" class="icon-button" on:click={clipboard} disabled={!mounted}>
-						<span class="material-symbols-rounded">assignment</span>
-					</button>
-				</Tooltip>
-			</div>
-			<button type="button" class="share">Share</button>
+	<button class="image-fullscreen" on:click={fullscreen}>
+		<img src={image} alt="User Uploaded" />
+	</button>
+
+	<div class="info">
+		<div class="details">
+			<p class="time">{formatDate(time)}</p>
+			<p class="size">{formatBytes(size)}</p>
 		</div>
-
-		<button type="button" class="more icon-button">
-			<span class="material-symbols-rounded">read_more</span>
-		</button>
-	</header>
+		{#if description}
+			<h2 class="description headline-small">{description}</h2>
+		{/if}
+	</div>
 </div>
 
 <style>
 	.container {
+		--padding: 0.5rem;
 		--max-width: 1280px;
-		--border-radius: 2.5rem;
+
+		--border-radius: 1rem;
 
 		display: flex;
 		align-items: center;
+		flex-direction: column;
 		justify-content: center;
+
+		gap: 0.5rem;
+
+		width: fit-content;
+		min-width: 16rem;
+		max-width: var(--max-width);
+
+		margin: 0 auto;
+		padding: var(--padding);
+	}
+
+	.info {
+		display: flex;
 		flex-direction: column;
 
-		gap: 1rem;
-		margin: 0 auto;
+		gap: 0.25rem;
+		width: 100%;
 		padding: 1rem;
 
-		min-height: 100vh;
-		max-width: var(--max-width);
-	}
-
-	header {
-		display: flex;
-		justify-content: space-between;
-		align-items: center;
-
-		width: 100%;
-		height: 4.5rem;
-		padding: 0 1rem;
-
 		border-radius: var(--border-radius);
-		background-color: var(--color-surface-2);
+		background-color: var(--color-surface-1);
 	}
 
-	h1 {
-		margin: 0 0.5rem;
+	.info h2 {
+		margin: 0;
 
+		font-size: 1.5rem;
 		font-weight: 300;
-		font-size: var(--typescale-headline-small-font-size);
-		line-height: var(--typescale-headline-small-line-height);
+		line-height: 1.75rem;
+
+		max-width: 36rem;
+	}
+
+	.details {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+
+		font-weight: 200;
+	}
+
+	.details p {
+		margin: 0;
 	}
 
 	img {
-		width: 100%;
-		height: 100%;
+		display: block;
+
+		max-width: 100%;
+		max-height: 100%;
 
 		object-fit: contain;
 		object-position: center;
 	}
 
-	.image-button {
+	.image-fullscreen {
 		display: flex;
 		align-items: center;
 		justify-content: center;
 
 		cursor: pointer;
 
+		width: 100%;
 		padding: 0;
 		margin: 0;
 
 		border: none;
 		border-radius: var(--border-radius);
 
-		background-color: var(--color-surface-2);
+		background-color: var(--color-surface-1);
 		overflow: hidden;
 
-		transition: border-radius 200ms ease 200ms, box-shadow 200ms ease;
+		transition: border-radius 200ms ease 100ms, box-shadow 200ms ease;
 	}
 
-	.image-button:hover {
+	.image-fullscreen:hover {
 		border-radius: 0.5rem;
-		box-shadow: 0 0 0 3px var(--color-primary);
-	}
-
-	.more {
-		display: flex;
-	}
-
-	.buttons {
-		display: none;
-		gap: 0.5rem;
-	}
-
-	.icon-buttons {
-		display: flex;
-	}
-
-	.icon-button {
-		display: flex;
-		align-items: center;
-		justify-content: center;
-
-		width: 2.75rem;
-		height: 2.75rem;
-
-		font: inherit;
-		border: none;
-		font-weight: 500;
-		border-radius: var(--border-radius);
-
-		color: var(--color-on-background);
-		background-color: transparent;
-
-		cursor: pointer;
-
-		transition: background-color 100ms ease;
-	}
-
-	.icon-button:hover {
-		color: var(--color-primary);
-		background-color: var(--color-surface-2);
-	}
-
-	.share {
-		display: flex;
-		align-items: center;
-		justify-content: center;
-
-		font: inherit;
-		border: none;
-		border-radius: var(--border-radius);
-
-		height: 2.75rem;
-		padding: 0 1.75rem;
-		font-weight: 500;
-
-		color: var(--color-on-background);
-		background-color: var(--color-surface-2);
-
-		cursor: pointer;
-	}
-
-	.share:hover {
-		color: var(--color-primary);
-		background-color: var(--color-surface-4);
-	}
-
-	h1 span {
-		border-radius: 0.25rem;
-
-		background: linear-gradient(to right, var(--color-primary) 0%, var(--color-primary) 100%);
-		background-position: 0% 100%;
-		background-repeat: no-repeat;
-		background-size: 0% 100%;
-
-		transition: background-size 200ms ease, color 200ms ease, padding 200ms ease;
-	}
-
-	a:hover h1 span {
-		padding: 0 0.5rem;
-		color: var(--color-on-primary);
-		background-size: 100% 100%;
+		box-shadow: 0 0 0 2px var(--color-primary);
 	}
 
 	@media (min-width: 470px) {
-		.more {
-			display: none;
+		.container {
+			gap: 0.75rem;
+			padding: 0.75rem;
 		}
 
-		.buttons {
-			display: flex;
-		}
-
-		h1 {
-			font-size: var(--typescale-headline-medium-font-size);
-			line-height: var(--typescale-headline-medium-line-height);
+		img {
+			max-height: 85vh;
 		}
 	}
 

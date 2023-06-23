@@ -46,7 +46,9 @@ export const load = (async ({ fetch, params, setHeaders }) => {
 
 		return {
 			image: `${STATIC_URL}/${STATIC_PATH}/${image.slug}.webp`,
-			description: image.description
+			description: image.description,
+			time: Number(image.time),
+			size: image.size
 		};
 	}
 
